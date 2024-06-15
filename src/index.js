@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
-//import "./index.css";
-//import App from "./App";
+import "./index.css";
+import App from "./App";
 
 import StarRating from "./StarRating";
 import Expander from "./challenge/Expander";
@@ -26,11 +26,11 @@ function TestComponent() {
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    {/* <App /> */}
+    <App />
     {/* <StarRating maxRating={"XXXX"} size={24} />
     <StarRating maxRating={10} color="red" size={24} defaultRating={3} />
     <TestComponent /> */}
-    <TestComponent />
-    <Expander></Expander>
+    {/* <TestComponent />
+    <Expander></Expander> */}
   </React.StrictMode>
 );

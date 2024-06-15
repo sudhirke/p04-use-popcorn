@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { renderToString } from "react-dom/server";
 
 const tempMovieData = [
@@ -248,10 +248,20 @@ function Main({ children }) {
   return <main className="main">{children}</main>;
 }
 
+const APIKEY = "164cb801";
+
 //Defines overall layout of the app
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+
+  // https://www.omdbapi.com/?apikey=164cb801&s=star
+  // Method to read data from api
+  useEffect(function () {
+    fetch(`https://www.omdbapi.com/?apikey=${APIKEY}&s=inception`)
+      .then((res) => res.json())
+      .then((data) => setMovies(data.Search));
+  }, []); //uses dependency array
 
   return (
     <>
