@@ -46,7 +46,7 @@ export default function StarRating({
     <div style={containerStyle}>
       <div style={starContainerStyle}>
         {Array.from({ length: maxRating }, (_, i) => (
-          <span>
+          <span key={i}>
             <StarIcon
               key={i}
               onRatingClick={() => handleRating(i + 1)}
