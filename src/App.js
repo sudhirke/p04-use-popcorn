@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
+import CurrencyConverter from "./challenge/CurrencyConverter";
 
 // const tempMovieData = [
 //   {
@@ -499,6 +500,8 @@ export default function App() {
         <Search query={query} setQuery={setQuery} />
         <ResutCount movies={movies} />
       </NavBar>
+      <CurrencyConverter />
+
       <Main>
         <MovieList>
           {/* {isLoading ? <Loader /> : <Movies movies={movies} />} */}
