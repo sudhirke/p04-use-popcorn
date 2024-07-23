@@ -2,6 +2,153 @@ import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
 import CurrencyConverter from "./challenge/CurrencyConverter";
 
+function Main({ children }) {
+  return <main className="main">{children}</main>;
+}
+
+const APIKEY = "164cb801";
+
+//Defines overall layout of the app
+export default function App() {
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+
+  //const [watched, setWatched] = useState(tempWatchedData);
+  //Pass the function that initlizes
+  const [watched, setWatched] = useState(function () {
+    const storedValue = localStorage.getItem("watched");
+    return JSON.parse(storedValue);
+  });
+
+  const [selectedId, setSelectedId] = useState(null);
+
+  //handle movie selection from list
+  function handleSelectMovie(id) {
+    setSelectedId((selectedId) => (id === selectedId ? null : id));
+  }
+
+  function handleCloseMovie() {
+    setSelectedId(null);
+  }
+
+  function handleAddWatched(movie) {
+    setWatched((watched) => [...watched, movie]);
+
+    //local storage implementation
+    //localStorage.setItem("watched", JSON.stringify([...watched, movie]));
+  }
+
+  function handleDeleteWatched(id) {
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
+  }
+
+  useEffect(
+    function () {
+      localStorage.setItem("watched", JSON.stringify(watched));
+    },
+    [watched]
+  );
+
+  // https://www.omdbapi.com/?apikey=164cb801&s=star
+  // Method to read data from api
+  useEffect(
+    function () {
+      //declare abort controller
+      const controller = new AbortController();
+
+      async function fetchMovies() {
+        try {
+          setIsLoading(true);
+          setError("");
+          const result = await fetch(
+            `https://www.omdbapi.com/?apikey=${APIKEY}&s=${query}`,
+            { signal: controller.signal }
+          );
+
+          //Error handling
+          if (!result.ok)
+            throw new Error("Somethign went wrong while fetching movies!");
+
+          const data = await result.json();
+          if (data.Response === "False") throw new Error("Movie not found!!");
+
+          setMovies(data.Search);
+
+          setIsLoading(false);
+
+          setError("");
+        } catch (err) {
+          console.log(err);
+          if (err.name !== "AbortError") {
+            setError(err.message);
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      if (query.length < 3) {
+        setMovies([]);
+        setError("");
+        return;
+      }
+
+      handleCloseMovie();
+      fetchMovies();
+
+      //cleanup function for this effect
+      return function () {
+        //abort the request using controller
+        controller.abort();
+      };
+    },
+    [query]
+  ); //uses dependency array
+
+  return (
+    <>
+      <NavBar>
+        <Search query={query} setQuery={setQuery} />
+        <ResutCount movies={movies} />
+      </NavBar>
+
+      {/* Challenge section 12 <CurrencyConverter /> */}
+
+      <Main>
+        <MovieList>
+          {/* {isLoading ? <Loader /> : <Movies movies={movies} />} */}
+          {isLoading && <Loader />}
+          {!isLoading && !error && (
+            <Movies movies={movies} onSelectMovie={handleSelectMovie} />
+          )}
+          {error && <ErrorMessage message={error} />}
+        </MovieList>
+
+        <MovieList>
+          {selectedId ? (
+            <MovieDetails
+              selectedId={selectedId}
+              onCloseMovie={handleCloseMovie}
+              onAddWatched={handleAddWatched}
+              watched={watched}
+            />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMovieHistory
+                watched={watched}
+                onDeleteWatched={handleDeleteWatched}
+              />
+            </>
+          )}
+        </MovieList>
+      </Main>
+    </>
+  );
+}
+
 // const tempMovieData = [
 //   {
 //     imdbID: "tt1375666",
@@ -401,136 +548,6 @@ function WatchedMovie({ movie, onDeleteWatched }) {
           />
         </div>
       </li>
-    </>
-  );
-}
-
-function Main({ children }) {
-  return <main className="main">{children}</main>;
-}
-
-const APIKEY = "164cb801";
-
-//Defines overall layout of the app
-export default function App() {
-  const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState(tempWatchedData);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
-
-  const [selectedId, setSelectedId] = useState(null);
-
-  //handle movie selection from list
-  function handleSelectMovie(id) {
-    setSelectedId((selectedId) => (id === selectedId ? null : id));
-  }
-
-  function handleCloseMovie() {
-    setSelectedId(null);
-  }
-
-  function handleAddWatched({ movie }) {
-    setWatched((watched) => [...watched, movie]);
-  }
-
-  function handleDeleteWatched(id) {
-    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
-  }
-
-  // https://www.omdbapi.com/?apikey=164cb801&s=star
-  // Method to read data from api
-  useEffect(
-    function () {
-      //declare abort controller
-      const controller = new AbortController();
-
-      async function fetchMovies() {
-        try {
-          setIsLoading(true);
-          setError("");
-          const result = await fetch(
-            `https://www.omdbapi.com/?apikey=${APIKEY}&s=${query}`,
-            { signal: controller.signal }
-          );
-
-          //Error handling
-          if (!result.ok)
-            throw new Error("Somethign went wrong while fetching movies!");
-
-          const data = await result.json();
-          if (data.Response === "False") throw new Error("Movie not found!!");
-
-          setMovies(data.Search);
-
-          setIsLoading(false);
-
-          setError("");
-        } catch (err) {
-          console.log(err);
-          if (err.name !== "AbortError") {
-            setError(err.message);
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      }
-
-      if (query.length < 3) {
-        setMovies([]);
-        setError("");
-        return;
-      }
-
-      handleCloseMovie();
-      fetchMovies();
-
-      //cleanup function for this effect
-      return function () {
-        //abort the request using controller
-        controller.abort();
-      };
-    },
-    [query]
-  ); //uses dependency array
-
-  return (
-    <>
-      <NavBar>
-        <Search query={query} setQuery={setQuery} />
-        <ResutCount movies={movies} />
-      </NavBar>
-      <CurrencyConverter />
-
-      <Main>
-        <MovieList>
-          {/* {isLoading ? <Loader /> : <Movies movies={movies} />} */}
-          {isLoading && <Loader />}
-          {!isLoading && !error && (
-            <Movies movies={movies} onSelectMovie={handleSelectMovie} />
-          )}
-          {error && <ErrorMessage message={error} />}
-        </MovieList>
-
-        <MovieList>
-          {selectedId ? (
-            <MovieDetails
-              selectedId={selectedId}
-              onCloseMovie={handleCloseMovie}
-              onAddWatched={handleAddWatched}
-              watched={watched}
-            />
-          ) : (
-            <>
-              <WatchedSummary watched={watched} />
-              <WatchedMovieHistory
-                watched={watched}
-                onDeleteWatched={handleDeleteWatched}
-              />
-            </>
-          )}
-        </MovieList>
-      </Main>
     </>
   );
 }
