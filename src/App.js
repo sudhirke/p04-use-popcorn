@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import CurrencyConverter from "./challenge/CurrencyConverter";
 import { useMovies } from "./useMovies";
