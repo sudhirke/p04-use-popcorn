@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState } from "react";
 
 //'https://api.frankfurter.app/latest?amount=100&from=USD&to=INR'
